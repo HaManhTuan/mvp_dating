@@ -1,0 +1,76 @@
+# PHP FPM 8.2 - Development Version
+FROM php:8.2-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    nano \
+    htop \
+    vim \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip
+
+# Install intl extension
+RUN apt-get update && apt-get install -y libicu-dev && docker-php-ext-install intl
+
+# Install Xdebug for development
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
+# Xdebug configuration for development
+# RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.client_host=10.103.0.130" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.discover_client_host=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Create a user with the same UID/GID as host user
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+# Set user permissions for development
+RUN usermod -u ${USER_ID} www-data && groupmod -g ${GROUP_ID} www-data
+
+# Create working directory and set permissions
+WORKDIR /var/www/html
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+chown -R www-data:www-data /var/www/html\n\
+chmod -R 755 /var/www/html\n\
+exec php-fpm' > /usr/local/bin/start.sh \
+    && chmod +x /usr/local/bin/start.sh
+
+EXPOSE 9000
+
+CMD ["/usr/local/bin/start.sh"]

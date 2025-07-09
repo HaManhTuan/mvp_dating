@@ -1,0 +1,71 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+*.md
+
+# Node modules
+node_modules
+npm-debug.log*
+
+# Composer
+vendor/
+
+# Environment files
+.env.example
+.env.testing
+.env.backup
+
+# Storage and cache
+storage/app/*
+!storage/app/public/
+!storage/app/.gitignore
+storage/framework/cache/*
+!storage/framework/cache/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/testing/*
+!storage/framework/testing/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/logs/*
+!storage/logs/.gitignore
+
+# Bootstrap cache
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Tests
+tests/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (don't include in build context)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Build files
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package files
+*.tar.gz
+*.zip
